@@ -22,8 +22,15 @@ class ClientThread(threading.Thread):
                 print("closing connection to %s port %d" %
                       (self.address[0], self.address[1]))
                 break
-            response = command + " : " + argument
-            # self.connectionSocket.send(response.encode())
+            elif command == "error":
+                response = "500 Syntax error, command unrecognized"
+                self.connectionSocket.send(response.encode())
+                continue
+
+            # respond with specified funcion response
+            response = switcher(command, argument)
+
+            self.connectionSocket.send(response.encode())
 
         self.connectionSocket.close()
 
@@ -31,11 +38,60 @@ class ClientThread(threading.Thread):
 
 
 def serverPI(message):
-    if message == "QUIT":
-        return message, " "
-    else:
+    if " " in message:
         command, argument = message.split(' ')
         return command, argument
+    elif message == "QUIT":
+        return message, " "
+    elif message == "NOOP":
+        return message, " "
+    else:
+        return "error", " "
+        # functions to handle implemented commands\
+
+
+def USER(argument):
+    return ' call USER: ' + argument
+
+
+def PORT(argument):
+    return ' call PORT: ' + argument
+
+
+def TYPE(argument):
+    return ' call TYPE: ' + argument
+
+
+def MODE(argument):
+    return ' call MODE: ' + argument
+
+
+def RETR(argument):
+    return ' call RETR: ' + argument
+
+
+def STOR(argument):
+    return ' call STOR: ' + argument
+
+
+def NOOP(argument):
+    return "OK"
+
+# function to select function base on command
+
+
+def switcher(command, argument):
+    switch = {
+        "USER": USER(argument),
+        "PORT": PORT(argument),
+        "TYPE": TYPE(argument),
+        "MODE": MODE(argument),
+        "RETR": RETR(argument),
+        "STOR": STOR(argument),
+        "NOOP": NOOP(argument)
+    }
+    func = switch.get(command, "502 Command not implemented")
+    return func
 
 
 serverPort = 6000
