@@ -1,6 +1,10 @@
 from socket import *
 import threading
 
+functionsImplimented = ["USER", "QUIT", "PORT",
+                        "TYPE",  "MODE", "RETR", "STOR", "NOOP"]
+
+
 # Thread to serve a client
 
 
@@ -9,6 +13,7 @@ class ClientThread(threading.Thread):
         threading.Thread.__init__(self)
         self.address = address
         self.connectionSocket = connectionSocket
+        self.Username = ""
 
     def run(self):
         print("connected to %s port %d" % (self.address[0], self.address[1]))
@@ -16,7 +21,7 @@ class ClientThread(threading.Thread):
             message = self.connectionSocket.recv(1024)
             message = message.decode()
             # interpret message
-            command, argument = serverPI(message)
+            command, argument = self.serverPI(message)
             print("Command: %s, Argument: %s" % (command, argument))
 
             if command == 'QUIT':
@@ -29,73 +34,61 @@ class ClientThread(threading.Thread):
                 continue
 
             # respond with specified funcion response
-            response = switcher(command, argument)
+            response = self.switcher(command, argument)
 
             self.connectionSocket.send(response.encode())
 
         self.connectionSocket.close()
 
-# server protocol interpreter. Extracts (command, message) from recieved message
+    # server protocol interpreter. Extracts (command, message) from recieved message
 
-
-functionsImplimented = ["USER", "QUII", "PORT",
-                        "TYPE",  "MODE", "RETR", "STOR", "NOOP"]
-
-
-def serverPI(message):
-    if " " in message:
-        command, argument = message.split(' ')
-        return command, argument
-    else:
-        if message in functionsImplimented:
-            return message, " "
+    def serverPI(self, message):
+        if " " in message:
+            command, argument = message.split(' ')
+            return command, argument
         else:
-            return "error", " "
-        # functions to handle implemented commands\
+            if message in functionsImplimented:
+                return message, " "
+            else:
+                return "error", " "
+            # functions to handle implemented commands\
 
+    def USER(self, argument):
+        self.Username = argument
+        return ' call USER: ' + argument
 
-def USER(argument):
-    return ' call USER: ' + argument
+    def PORT(self, argument):
+        return ' call PORT: ' + argument
 
+    def TYPE(self, argument):
+        return ' call TYPE: ' + argument
 
-def PORT(argument):
-    return ' call PORT: ' + argument
+    def MODE(self, argument):
+        return ' call MODE: ' + argument
 
+    def RETR(self, argument):
+        return ' call RETR: ' + argument
 
-def TYPE(argument):
-    return ' call TYPE: ' + argument
+    def STOR(self, argument):
+        return ' call STOR: ' + argument
 
+    def NOOP(self, argument):
+        return "OK"
 
-def MODE(argument):
-    return ' call MODE: ' + argument
+    # function to select function base on command
 
-
-def RETR(argument):
-    return ' call RETR: ' + argument
-
-
-def STOR(argument):
-    return ' call STOR: ' + argument
-
-
-def NOOP(argument):
-    return "OK"
-
-# function to select function base on command
-
-
-def switcher(command, argument):
-    switch = {
-        "USER": USER(argument),
-        "PORT": PORT(argument),
-        "TYPE": TYPE(argument),
-        "MODE": MODE(argument),
-        "RETR": RETR(argument),
-        "STOR": STOR(argument),
-        "NOOP": NOOP(argument)
-    }
-    func = switch.get(command, "502 Command not implemented")
-    return func
+    def switcher(self, command, argument):
+        switch = {
+            "USER": self.USER(argument),
+            "PORT": self.PORT(argument),
+            "TYPE": self.TYPE(argument),
+            "MODE": self.MODE(argument),
+            "RETR": self.RETR(argument),
+            "STOR": self.STOR(argument),
+            "NOOP": self.NOOP(argument)
+        }
+        func = switch.get(command, "502 Command not implemented")
+        return func
 
 
 serverPort = 6000
