@@ -35,12 +35,14 @@ class ClientThread(threading.Thread):
 
             # respond with specified funcion response
             response = self.switcher(command, argument)
-
-            self.connectionSocket.send(response.encode())
+            self.respond(response)
 
         self.connectionSocket.close()
 
-    # server protocol interpreter. Extracts (command, message) from recieved message
+    def respond(self, response):
+        self.connectionSocket.send(response.encode())
+
+        # server protocol interpreter. Extracts (command, message) from recieved message
 
     def serverPI(self, message):
         if " " in message:
