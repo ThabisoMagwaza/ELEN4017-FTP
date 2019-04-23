@@ -18,6 +18,7 @@ class ClientThread(threading.Thread):
             # interpret message
             command, argument = serverPI(message)
             print("Command: %s, Argument: %s" % (command, argument))
+
             if command == 'QUIT':
                 print("closing connection to %s port %d" %
                       (self.address[0], self.address[1]))
@@ -37,16 +38,19 @@ class ClientThread(threading.Thread):
 # server protocol interpreter. Extracts (command, message) from recieved message
 
 
+functionsImplimented = ["USER", "QUII", "PORT",
+                        "TYPE",  "MODE", "RETR", "STOR", "NOOP"]
+
+
 def serverPI(message):
     if " " in message:
         command, argument = message.split(' ')
         return command, argument
-    elif message == "QUIT":
-        return message, " "
-    elif message == "NOOP":
-        return message, " "
     else:
-        return "error", " "
+        if message in functionsImplimented:
+            return message, " "
+        else:
+            return "error", " "
         # functions to handle implemented commands\
 
 
