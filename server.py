@@ -13,7 +13,7 @@ class ClientThread(threading.Thread):
         threading.Thread.__init__(self)
         self.address = address
         self.connectionSocket = connectionSocket
-        self.Username = ""
+        self.username = ""
 
     def run(self):
         print("connected to %s port %d" % (self.address[0], self.address[1]))
@@ -39,14 +39,19 @@ class ClientThread(threading.Thread):
 
         self.connectionSocket.close()
 
+    # Initiate data connection
+    # def data(self)
+    #     dataPort
+
+    # sends response to client via connection socket
     def respond(self, response):
         self.connectionSocket.send(response.encode())
 
-        # server protocol interpreter. Extracts (command, message) from recieved message
+    # server protocol interpreter. Extracts (command, message) from recieved message
 
     def serverPI(self, message):
         if " " in message:
-            command, argument = message.split(' ')
+            command, argument = message.split(' ', 1)
             return command, argument
         else:
             if message in functionsImplimented:
@@ -55,9 +60,10 @@ class ClientThread(threading.Thread):
                 return "error", " "
             # functions to handle implemented commands\
 
+    # sets the username of this the client thread
     def USER(self, argument):
-        self.Username = argument
-        return ' call USER: ' + argument
+        self.username = argument
+        return "200 Command okay"
 
     def PORT(self, argument):
         return ' call PORT: ' + argument
